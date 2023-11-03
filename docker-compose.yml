@@ -1,0 +1,14 @@
+version: '3'
+services:
+  arduinocli:
+    container_name: arduinocli
+    build:
+      context: ./arduino
+      dockerfile: dockerfile
+    ports:
+      - 18085:7681
+    volumes:
+      - ./volumes/myhome:/home/rluser
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+    restart: unless-stopped

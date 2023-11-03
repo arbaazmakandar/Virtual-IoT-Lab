@@ -1,0 +1,36 @@
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
+
+ENV USER=rluser
+RUN useradd $USER
+RUN usermod -a -G dialout $USER
+
+COPY arduino-cli /usr/bin/arduino-cli
+
+RUN chmod 777 /usr/bin/arduino-cli
+
+RUN apt-get update  && \
+ apt-get install -y build-essential cmake git libjson-c-dev libwebsockets-dev && \
+ git clone https://github.com/tsl0922/ttyd.git && \
+ cd ttyd && mkdir build && cd build && \
+ cmake .. && \
+ make && make install
+
+RUN apt-get update && \
+#    apt-get install -y fuse libfuse2 && \
+    # apt-get install -y nano arduino tmux \
+    apt-get install -y nano tmux
+
+#RUN mkdir -p /home/jboss/myhub/logs ; chown -R jboss:jboss /home/jboss/myhub/logs
+#USER jboss
+
+USER $USER
+WORKDIR /home/$USER/bin
+RUN arduino-cli board list
+RUN arduino-cli core update-index
+RUN arduino-cli core install arduino:avr
+RUN arduino-cli lib update-index
+
+CMD ttyd bash && tail -f /dev/null
+# CMD ttyd tmux new -A -s ttyd && tail -f /dev/null
+# CMD ttyd -a -t rendererType=canvas bash && tail -f /dev/null

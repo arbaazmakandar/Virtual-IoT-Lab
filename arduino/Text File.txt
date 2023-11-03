@@ -1,0 +1,34 @@
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
+
+ENV USER=rluser
+RUN useradd $USER
+RUN usermod -a -G dialout $USER
+
+COPY arduino-cli /usr/bin/arduino-cli
+#COPY arduino-ide.AppImage /home/$USER/bin/arduino-ide.AppImage
+#COPY arduino-ide /home/$USER/bin/
+
+RUN apt-get update && \
+    apt-get install -y dia-common gnupg wget apt-transport-https software-properties-common && \
+    wget -q https://xpra.org/gpg.asc -O- | apt-key add - && \
+    add-apt-repository "deb https://xpra.org/ focal main" && \
+    apt-get update && \
+    apt-get install -y arduino && \
+#    apt-get install -y fuse libfuse2 && \
+    apt-get install -y xpra gedit nano
+
+#RUN chmod 4755 /home/$USER/bin/chrome-sandbox
+
+#RUN chown -R $USER:$USER /home/$USER
+#RUN usermod $USER -g xpra
+#RUN usermod $USER -g users
+
+USER $USER
+WORKDIR /home/$USER/bin
+CMD arduino-cli core update-index
+CMD arduino-cli core install arduino:avr
+CMD arduino-cli lib update-index
+
+CMD xpra start --start=arduino --bind-tcp=0.0.0.0:8080 --html=on && tail -f /dev/null
+
